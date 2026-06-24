@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Organograma – Filial Apucarana</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #F0F4F8;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 60px;
+  }
+
+  .header { text-align: center; margin-bottom: 40px; }
+  .header .eyebrow { font-size:11px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#1A6FC4; margin-bottom:8px; }
+  .header h1 { font-size:26px; font-weight:700; color:#0D1F3C; letter-spacing:-0.02em; }
+  .header .divider { width:48px; height:3px; background:#1A6FC4; border-radius:2px; margin:14px auto 0; }
+
+  .org-wrapper { width:100%; max-width:1200px; display:flex; flex-direction:column; align-items:center; }
+
+  .card { background:#fff; border-radius:14px; padding:16px 18px; display:flex; flex-direction:column; align-items:center; gap:3px; box-shadow:0 2px 14px rgba(13,31,60,0.10); text-align:center; transition:box-shadow 0.2s; }
+  .card:hover { box-shadow:0 6px 24px rgba(13,31,60,0.16); }
+  .card .role { font-size:9.5px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; }
+  .card .name { font-size:14px; font-weight:700; color:#0D1F3C; line-height:1.3; }
+  .card .tag  { font-size:11px; font-weight:500; color:#6B7A99; margin-top:1px; }
+  .avatar { border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; color:#fff; flex-shrink:0; }
+
+  .card-manager { border-top:4px solid #1A6FC4; width:230px; }
+  .card-manager .role   { color:#1A6FC4; }
+  .card-manager .avatar { width:52px; height:52px; font-size:20px; background:#1A6FC4; margin-bottom:10px; }
+
+  .card-sv { border-top:4px solid #2DB06E; width:190px; }
+  .card-sv .role   { color:#2DB06E; }
+  .card-sv .avatar { width:40px; height:40px; font-size:13px; background:#2DB06E; margin-bottom:7px; }
+
+  .card-so { border-top:4px solid #F59E0B; width:190px; }
+  .card-so .role   { color:#D97706; }
+  .card-so .avatar { width:40px; height:40px; font-size:13px; background:#F59E0B; margin-bottom:7px; }
+
+  .card-vaga { border-top:4px dashed #2DB06E; width:190px; background:#F8FBF9; opacity:0.85; }
+  .card-vaga .role   { color:#2DB06E; }
+  .card-vaga .avatar { width:40px; height:40px; font-size:20px; background:#e0f3ea; color:#2DB06E; margin-bottom:7px; border:2px dashed #2DB06E; }
+  .card-vaga .name   { color:#8CA89A; font-style:italic; }
+
+  /* Member cards */
+  .member-card {
+    background:#fff; border-radius:10px; padding:10px 14px;
+    display:flex; align-items:center; gap:10px;
+    box-shadow:0 1px 6px rgba(13,31,60,0.08);
+    width:100%; cursor:pointer;
+    transition:box-shadow 0.2s, transform 0.15s;
+    position: relative;
+  }
+  .member-card:hover { box-shadow:0 4px 14px rgba(13,31,60,0.16); transform:translateY(-1px); }
+  .member-card.has-data::after {
+    content: '▸';
+    position: absolute;
+    right: 10px;
+    font-size: 11px;
+    color: #94A3B8;
+  }
+  .member-avatar { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; flex-shrink:0; }
+  .member-name { font-size:12.5px; font-weight:600; color:#1A2744; text-align:left; line-height:1.3; }
+  .member-sub  { font-size:10.5px; font-weight:400; color:#8A99B5; margin-top:1px; }
+
+  .member-card.vaga { background:#F5F7FA; border:1px dashed #CBD5E1; box-shadow:none; cursor:default; }
+  .member-card.vaga .member-avatar { background:#CBD5E1; color:#8A99B5; }
+  .member-card.vaga .member-name   { color:#8A99B5; font-style:italic; }
+
+  .connector-svg { display:block; overflow:visible; }
+  .supervisors-row { display:flex; justify-content:center; gap:20px; width:100%; }
+  .sup-col { display:flex; flex-direction:column; align-items:center; width:190px; flex-shrink:0; }
+  .team-list { display:flex; flex-direction:column; gap:6px; width:100%; }
+  .stub-down { width:2px; height:24px; background:#CBD5E1; }
+
+  .av-verde   { background:#2DB06E; }
+  .av-verde2  { background:#1E8F56; }
+  .av-amarelo { background:#E8970A; }
+  .av-gray    { background:#94A3B8; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(13,31,60,0.45);
+    backdrop-filter: blur(3px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: #fff;
+    border-radius: 18px;
+    padding: 32px 28px 28px;
+    width: 360px;
+    max-width: 92vw;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 16px 48px rgba(13,31,60,0.22);
+    position: relative;
+    animation: popIn 0.2s ease;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.92); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 14px; right: 16px;
+    background: none; border: none;
+    font-size: 20px; color: #94A3B8;
+    cursor: pointer; line-height: 1;
+  }
+  .modal-close:hover { color: #0D1F3C; }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .modal-avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+  }
+  .modal-title { font-size: 17px; font-weight: 700; color: #0D1F3C; }
+  .modal-sup   { font-size: 11px; color: #6B7A99; margin-top: 2px; }
+
+  .modal-section-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: #94A3B8;
+    margin-bottom: 10px;
+  }
+
+  /* Funções */
+  .roles-list { display:flex; flex-direction:column; gap:8px; margin-bottom: 20px; }
+  .role-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: #F6F8FC; border-radius: 10px; padding: 10px 14px;
+  }
+  .role-dot { width:8px; height:8px; border-radius:50%; margin-top:4px; flex-shrink:0; }
+  .role-text { font-size:13px; font-weight:500; color:#1A2744; line-height:1.4; }
+
+  /* Cidades */
+  .cities-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .city-tag {
+    background: #EEF4FF;
+    color: #1A6FC4;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 20px;
+    text-transform: capitalize;
+    white-space: nowrap;
+  }
+
+  .modal-empty {
+    font-size: 13px; color: #94A3B8; font-style: italic;
+    text-align: center; padding: 16px 0;
+  }
+
+  .modal-divider { height:1px; background:#F0F4F8; margin: 16px 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">Estrutura Organizacional</div>
+  <h1>Filial Apucarana</h1>
+  <div class="divider"></div>
+</div>
+
+<div class="org-wrapper">
+
+  <div class="card card-manager">
+    <div class="avatar">MT</div>
+    <div class="role">Gerente de Filial</div>
+    <div class="name">Miguel Trindade</div>
+    <div class="tag">Filial Apucarana</div>
+  </div>
+
+  <svg class="connector-svg" width="1030" height="60" viewBox="0 0 1030 60">
+    <line x1="515" y1="0"  x2="515" y2="30" stroke="#CBD5E1" stroke-width="2"/>
+    <line x1="95"  y1="30" x2="935" y2="30" stroke="#CBD5E1" stroke-width="2"/>
+    <line x1="95"  y1="30" x2="95"  y2="60" stroke="#CBD5E1" stroke-width="2"/>
+    <line x1="305" y1="30" x2="305" y2="60" stroke="#CBD5E1" stroke-width="2"/>
+    <line x1="515" y1="30" x2="515" y2="60" stroke="#CBD5E1" stroke-width="2"/>
+    <line x1="725" y1="30" x2="725" y2="60" stroke="#CBD5E1" stroke-width="2"/>
+    <line x1="935" y1="30" x2="935" y2="60" stroke="#CBD5E1" stroke-width="2"/>
+  </svg>
+
+  <div class="supervisors-row">
+
+    <!-- LEONARDO MEIRELLES -->
+    <div class="sup-col">
+      <div class="card card-sv" style="width:190px">
+        <div class="avatar">LM</div>
+        <div class="role">Supervisor de Vendas</div>
+        <div class="name">Leonardo Meirelles</div>
+      </div>
+      <div class="stub-down"></div>
+      <div class="team-list">
+        <div class="member-card has-data" onclick="openModal('Boiadeiro','Leonardo Meirelles','av-verde','BO',[],['Londrina','Arapongas','Cornélio Procópio','Cambé','Rolândia','Apucarana','Colorado','Astorga','Sertanópolis','Bandeirantes','São Sebastião da Amoreira','Bela Vista do Paraíso','Ibiporã','Primeiro de Maio','Assaí','Andirá','Santa Fé','Porecatu','Santo Antônio da Platina','Alvorada do Sul','Florestópolis','Nossa Senhora das Graças','Centenário do Sul','Santo Inácio','Prado Ferreira','Ângulo','Tibagi','Iguaraçu','Lobato','Sertaneja','Jaguapitã','Flórida','Munhoz de Melo','Telêmaco Borba','Atalaia','Jataizinho','Guaraci','Faxinal','Itaguajé'])">
+          <div class="member-avatar av-verde">BO</div>
+          <div><div class="member-name">Boiadeiro</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('A &amp; D','Leonardo Meirelles','av-verde','AD',[],['Maringá','Paiçandu','Califórnia','Marialva','Mandaguari','Sarandi','Presidente Prudente','Marilândia do Sul','Apucarana','Cambira','Iguaraçu'])">
+          <div class="member-avatar av-verde">AD</div>
+          <div><div class="member-name">A &amp; D</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('João Marcato','Leonardo Meirelles','av-verde','JM',[],['Maringá','Apucarana','Sarandi'])">
+          <div class="member-avatar av-verde">JM</div>
+          <div><div class="member-name">João Marcato</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('Marcos Fernandes','Leonardo Meirelles','av-verde','MF',[],['Ribeirão do Pinhal','Sertanópolis','Ibiporã','Cambará','Uraí','Jataizinho','Cornélio Procópio','Abatiá','Nova Fátima','Congonhinhas','Primeiro de Maio','Rancho Alegre','Santa Mariana'])">
+          <div class="member-avatar av-verde">MF</div>
+          <div><div class="member-name">Marcos Fernandes</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('Matheus Pereira','Leonardo Meirelles','av-verde','MP',[],['Apucarana','Arapongas','Maúa da Serra','Sabáudia','Pitangueiras','Marilândia do Sul','Rio Bom','Califórnia'])">
+          <div class="member-avatar av-verde">MP</div>
+          <div><div class="member-name">Matheus Pereira</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('Octavio Augusto','Leonardo Meirelles','av-verde','OA',[],['Londrina','Cambé'])">
+          <div class="member-avatar av-verde">OA</div>
+          <div><div class="member-name">Octavio Augusto</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('Maycon Pupulin','Leonardo Meirelles','av-verde','MP2',[],['Sarandi','Marialva','Mandaguari','Maringá','Jandaia do Sul','Astorga','Iguaraçu','Cambira','Ângulo','Novo Itacolomi','Itaguajé','Munhoz de Melo'])">
+          <div class="member-avatar av-verde">MP</div>
+          <div><div class="member-name">Maycon Pupulin</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('Rodrigo Glauber','Leonardo Meirelles','av-verde','RG',[],['Londrina','Cambé','Rolândia'])">
+          <div class="member-avatar av-verde">RG</div>
+          <div><div class="member-name">Rodrigo Glauber</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('Sergio Neiverth','Leonardo Meirelles','av-verde','SN',[],['Maringá'])">
+          <div class="member-avatar av-verde">SN</div>
+          <div><div class="member-name">Sergio Neiverth</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RAFAEL DE OLIVEIRA -->
+    <div class="sup-col">
+      <div class="card card-sv" style="width:190px">
+        <div class="avatar">RO</div>
+        <div class="role">Supervisor de Vendas</div>
+        <div class="name">Rafael de Oliveira</div>
+      </div>
+      <div class="stub-down"></div>
+      <div class="team-list">
+        <div class="member-card has-data" onclick="openModal('Alexandre Andrade','Rafael de Oliveira','av-verde2','AA',[],['Campo Mourão','Corbélia','Roncador','Mamborê','Ubiratã','Campina da Lagoa','Anahy','Goioerê','Moreira Sales','Juranda','Nova Cantu','Boa Esperança','Farol','Janiópolis','Mariluz'])">
+          <div class="member-avatar av-verde2">AA</div>
+          <div><div class="member-name">Alexandre Andrade</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('Alexandre Constantin','Rafael de Oliveira','av-verde2','AC',[],['Cianorte','Engenheiro Beltrão','Paraíso do Norte','Peabiru','Japurá','Terra Boa','São Carlos do Ivaí','Rondon','Araruna','Indianópolis','Mirador','Tapejara','São Tomé','São Manoel do Paraná','Jussara','Tuneiras do Oeste','Guaporema'])">
+          <div class="member-avatar av-verde2">AC</div>
+          <div><div class="member-name">Alexandre Constantin</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('Fernando Henrique','Rafael de Oliveira','av-verde2','FH',[],['Umuarama','Iporã','Pérola','Guaíra','Cruzeiro do Oeste','Douradina','Xambrê','Cidade Gaúcha','Alto Paraíso','Francisco Alves','Tapira','Icaraíma','Perobal','Alto Piquiri','Altônia','Ivaté','Maria Helena','São Jorge do Patrocínio','Cafezal do Sul','Nova Olímpia','Foz do Iguaçu'])">
+          <div class="member-avatar av-verde2">FH</div>
+          <div><div class="member-name">Fernando Henrique</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('Jaime Roberto','Rafael de Oliveira','av-verde2','JR',[],['Presidente Prudente','Presidente Epitácio','Presidente Venceslau','Regente Feijó','Pirapozinho','Álvares Machado','Santo Anastácio','Indiana','Martinópolis','Rancharia'])">
+          <div class="member-avatar av-verde2">JR</div>
+          <div><div class="member-name">Jaime Roberto</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('Jonatas Santos','Rafael de Oliveira','av-verde2','JS',[],['Paranavaí','Nova Esperança','Loanda','Santa Isabel do Ivaí','Nova Londrina','Alto Paraná','Porto Rico','Santa Cruz de Monte Castelo','Guairaçá','Marilena','Terra Rica','São João do Caiuá','Paranacity','Planaltina do Paraná','Diamante do Norte','Uniflor','Cruzeiro do Sul','São Pedro do Paraná'])">
+          <div class="member-avatar av-verde2">JS</div>
+          <div><div class="member-name">Jonatas Santos</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('Maicon Karpovicz','Rafael de Oliveira','av-verde2','MK',[],['Pitanga','Manoel Ribas','Ivaiporã','Barbosa Ferraz','Jardim Alegre','Iretama','São Pedro do Ivaí','Borrazópolis','Rosário do Ivaí','São João do Ivaí','Faxinal','Luiziana','Fênix','Lunardelli','Quinta do Sol','Corumbataí do Sul','Lidianópolis','Cruzaltina'])">
+          <div class="member-avatar av-verde2">MK</div>
+          <div><div class="member-name">Maicon Karpovicz</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('Tiago Radin','Rafael de Oliveira','av-verde2','TR',[],['Mandaguaçu','Paiçandu','Maringá','Doutor Camargo','Floresta','Bom Sucesso','São Jorge do Ivaí','Floraí','Itambé','Presidente Castelo Branco','Ivatuba','Ourizona'])">
+          <div class="member-avatar av-verde2">TR</div>
+          <div><div class="member-name">Tiago Radin</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAULO RIZZATTO -->
+    <div class="sup-col">
+      <div class="card card-so" style="width:190px">
+        <div class="avatar">PR</div>
+        <div class="role">Supervisor de Operações Comerciais</div>
+        <div class="name">Paulo Rizzatto</div>
+      </div>
+      <div class="stub-down"></div>
+      <div class="team-list">
+        <div class="member-card has-data" onclick="openModal('Claudemir','Paulo Rizzatto','av-amarelo','CL',['Vendedor da Loja Móvel'],[],'Loja Móvel')">
+          <div class="member-avatar av-amarelo">CL</div>
+          <div><div class="member-name">Claudemir</div><div class="member-sub">Loja Móvel</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('Raimundo','Paulo Rizzatto','av-amarelo','RA',['Vendedor da Loja Móvel'],[],'Loja Móvel')">
+          <div class="member-avatar av-amarelo">RA</div>
+          <div><div class="member-name">Raimundo</div><div class="member-sub">Loja Móvel</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('Kenzo','Paulo Rizzatto','av-amarelo','KE',['Refaturas / Bonificações','Doações Mensais','Loja Móvel','Auxiliar Juliana na digitação de Pedidos'],[])">
+          <div class="member-avatar av-amarelo">KE</div>
+          <div><div class="member-name">Kenzo</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('Geovana','Paulo Rizzatto','av-amarelo','GE',['Gestão de Pedidos Varejo','Gestão de Estoque Varejo Apucarana','Solicitação de Produtos'],[])">
+          <div class="member-avatar av-amarelo">GE</div>
+          <div><div class="member-name">Geovana</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('Thais','Paulo Rizzatto','av-amarelo','TH',['Operação dos Vendedores de Grandes Redes'],[])">
+          <div class="member-avatar av-amarelo">TH</div>
+          <div><div class="member-name">Thais</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUPERVISOR DISTRIBUIDORES -->
+    <div class="sup-col">
+      <div class="card card-vaga" style="width:190px">
+        <div class="avatar" style="width:40px;height:40px;font-size:20px;background:#e0f3ea;color:#2DB06E;border:2px dashed #2DB06E;margin-bottom:7px;">?</div>
+        <div class="role">Supervisor de Vendas (Distribuidores)</div>
+        <div class="name">A definir</div>
+      </div>
+    </div>
+
+    <!-- GRANDES REDES -->
+    <div class="sup-col">
+      <div class="card card-sv" style="width:190px;">
+        <div class="avatar" style="width:40px;height:40px;font-size:13px;background:#2DB06E;margin-bottom:7px;">?</div>
+        <div class="role" style="color:#2DB06E;">Supervisor de Vendas (Grandes Redes)</div>
+        <div class="name" style="color:#8CA89A;font-style:italic;">A definir</div>
+      </div>
+      <div class="stub-down"></div>
+      <div class="team-list">
+        <div class="member-card has-data" onclick="openModal('Alessandra Borgato','Grandes Redes','av-verde','AB',['Vendedora das redes:','Rede Bom Dia + Batista e Izepe','Irmãos Muffato','Sendas'],['Curitiba','Maringá','Sarandi','Londrina','Foz do Iguaçu','Ponta Grossa','Cascavel','Fazenda Rio Grande','São José dos Pinhais','Pinhais','Campo Mourão','Apucarana','Araucária','Colombo','Arapongas','Cianorte','Medianeira','Guaíra','Paranaguá','Toledo','Cambé','Campo Largo','Engenheiro Beltrão','Peabiru','Terra Boa','Paranavaí','Ibiporã','Santa Fé','Castro','Nova Esperança','Rolândia','Mandaguaçu','Paiçandu','Marechal Cândido Rondon','Quinta do Sol','Umuarama','Francisco Beltrão','São Pedro do Ivaí','Araruna','Floresta'])">
+          <div class="member-avatar av-verde">AB</div>
+          <div><div class="member-name">Alessandra Borgato</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('Juliana Castro','Grandes Redes','av-verde','JC',['Vendedora das redes:','Cia Paraná','CSD','Dusnei (Distribuidor)','GCA (Camilo)','Lejon','Oceânica (Distribuidor)'],['Paiçandu','Penápolis','Maringá','Cascavel','Umuarama','Cambé','Osvaldo Cruz','Mandaguaçu','Campo Mourão','São José dos Pinhais','Foz do Iguaçu','Jandaia do Sul','Goioerê','Mandaguari','Ivaiporã','Ubiratã','Pitanga','Sarandi','Manoel Ribas','Marialva','Paranavaí','Nova Esperança','Assis Chateaubriand'])">
+          <div class="member-avatar av-verde">JC</div>
+          <div><div class="member-name">Juliana Castro</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('Luiz Salmaso','Grandes Redes','av-verde','LS',['Vendedor das redes:','SPF','Rio Sul','Mogiana','Fiamma','F&F','Talismã','BRF'],['Vitória de Santo Antão','Campinas','Belo Horizonte','Comendador Levy Gasparian','Descalvado','Socorro','Rio de Janeiro','Pedro Leopoldo','Seropédica','Maringá','Mandaguaçu','Presidente Castelo Branco','Sarandi','Anhumaś','Terra Boa','Apucarana','Marialva','São Jorge do Ivaí'])">
+          <div class="member-avatar av-verde">LS</div>
+          <div><div class="member-name">Luiz Salmaso</div></div>
+        </div>
+        <div class="member-card has-data" onclick="openModal('Margarete Silva','Grandes Redes','av-verde','MS',['Vendedora das redes:','Asa Branca','Comcarne','F P Facanha','Frango Favorito','G V','Israbor','Kemin','Rebouças','RSV','Stock Atacadista'],['Mossoró','Lafaiete Coutinho','São Luís','Fortaleza','Maringá','Una','Belo Jardim','Vargeão','Nossa Senhora do Socorro','Arapiraca','Palmas','Londrina','Apucarana'])">
+          <div class="member-avatar av-verde">MS</div>
+          <div><div class="member-name">Margarete Silva</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-header">
+      <div class="modal-avatar" id="modalAvatar"></div>
+      <div>
+        <div class="modal-title" id="modalName"></div>
+        <div class="modal-sup" id="modalSup"></div>
+      </div>
+    </div>
+
+    <!-- Funções -->
+    <div id="rolesSection">
+      <div class="modal-section-title">Funções</div>
+      <div class="roles-list" id="modalRoles"></div>
+    </div>
+
+    <!-- Divisor entre funções e cidades (só aparece se tiver os dois) -->
+    <div class="modal-divider" id="modalDivider" style="display:none"></div>
+
+    <!-- Cidades -->
+    <div id="citiesSection">
+      <div class="modal-section-title" id="citiesTitle">Cidades de Atuação</div>
+      <div class="cities-grid" id="modalCities"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const avatarColors = {
+    'av-verde':   '#2DB06E',
+    'av-verde2':  '#1E8F56',
+    'av-amarelo': '#E8970A',
+    'av-gray':    '#94A3B8',
+  };
+  const dotColors = ['#1A6FC4','#2DB06E','#F59E0B','#E05C5C','#8B5CF6','#0EA5E9'];
+
+  function openModal(name, sup, avatarClass, initials, roles, cities, subtitle) {
+    document.getElementById('modalName').textContent = name;
+    document.getElementById('modalSup').textContent  = sup + (subtitle ? ' · ' + subtitle : '');
+    const av = document.getElementById('modalAvatar');
+    av.textContent = initials;
+    av.style.background = avatarColors[avatarClass] || '#94A3B8';
+
+    // Funções
+    const rolesList = document.getElementById('modalRoles');
+    const rolesSection = document.getElementById('rolesSection');
+    rolesList.innerHTML = '';
+    if (roles && roles.length > 0) {
+      rolesSection.style.display = '';
+      roles.forEach((r, i) => {
+        const item = document.createElement('div');
+        item.className = 'role-item';
+        item.innerHTML = `<div class="role-dot" style="background:${dotColors[i % dotColors.length]}"></div><div class="role-text">${r}</div>`;
+        rolesList.appendChild(item);
+      });
+    } else {
+      rolesSection.style.display = 'none';
+    }
+
+    // Cidades
+    const citiesGrid = document.getElementById('modalCities');
+    const citiesSection = document.getElementById('citiesSection');
+    const divider = document.getElementById('modalDivider');
+    citiesGrid.innerHTML = '';
+    if (cities && cities.length > 0) {
+      citiesSection.style.display = '';
+      cities.forEach(c => {
+        const tag = document.createElement('span');
+        tag.className = 'city-tag';
+        tag.textContent = c;
+        citiesGrid.appendChild(tag);
+      });
+      divider.style.display = (roles && roles.length > 0) ? '' : 'none';
+    } else {
+      citiesSection.style.display = 'none';
+      divider.style.display = 'none';
+    }
+
+    // Se não tem nada
+    if ((!roles || roles.length === 0) && (!cities || cities.length === 0)) {
+      rolesSection.style.display = '';
+      rolesList.innerHTML = '<div class="modal-empty">Nenhuma informação cadastrada ainda.</div>';
+    }
+
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+  function closeModalOutside(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+
+</body>
+</html>
